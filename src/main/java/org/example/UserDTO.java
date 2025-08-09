@@ -14,6 +14,10 @@ public class UserDTO {
         this.lastname = lastname;
     }
 
+    static public UserDTO of(UserEntity userEntity) {
+        return new UserDTO(userEntity.getName(), userEntity.getLastname());
+    }
+
     public String getName() {
         return name;
     }

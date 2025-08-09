@@ -3,9 +3,13 @@ package org.example;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
+import java.util.function.BiConsumer;
+
 @Service
 public class UserService {
-
+    @Autowired
+    private Map<String, BiConsumer<UserEntity, Map<String, ?>>> updateProcessors;
     @Autowired
     private UserRepository userRepository;
 
@@ -53,9 +57,20 @@ public class UserService {
         System.out.println(userRepository.findByName(name));
         return userRepository.findByName(name).orElseThrow(() -> new RuntimeException("Юзер не найден"));
     }
-//
-//    public UserDTO getUserByLastname(String lastname) {
-//        System.out.println(userRepository.findByLastname(lastname));
-//        return userRepository.findByLastname(lastname).orElseThrow(() -> new RuntimeException("Юзер не найден"));
-//    }
+
+    public UserDTO getUserByLastname(String lastname) {
+        System.out.println(userRepository.findByLastname(lastname));
+        return userRepository.findByLastname(lastname).orElseThrow(() -> new RuntimeException("Юзер не найден"));
+    }
+
+
+    public UserDTO patch(Long id, Map<String, ?> updates) {
+        return userRepository.findById(id)
+                .map((user) -> {
+                    updates.keySet()
+                            .forEach((key) -> updateProcessors.get(key).accept(user, updates));
+                    return user;
+                }).map(userRepository::save).map(UserDTO::of)
+                .orElseThrow(() -> new RuntimeException("Сущность не найдена"));
+    }
 }

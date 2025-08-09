@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -12,20 +13,16 @@ public class UserRestController {
     @Autowired
     private UserService userService;
 
-    @GetMapping("user/get/{name}")
-    public void getUserName(@PathVariable("name") String name, @PathVariable("name") String lastname) {
-        if(lastname != null){
-            userService.getUserByName(lastname);
-        }else
-        if(name != null){
-            userService.getUserByName(name);
+    @GetMapping("/user")
+    public UserDTO getUserName(@RequestParam(value = "name", required = false) String name, @RequestParam(value = "lastname", required = false) String lastname) {
+        if (lastname != null) {
+            return userService.getUserByLastname(lastname);
         }
+        if (name != null) {
+            return userService.getUserByName(name);
+        }
+        return null;
     }
-
-//    @GetMapping("user/get/{lastname}")
-//    public void getUserLastname(@PathVariable("lastname") String lastname) {
-//        userService.getUserByLastname(lastname);
-//    }
 
     @PostMapping("user/create")
     public UserDTO create(@RequestBody UserDTO newUser) {
@@ -47,8 +44,9 @@ public class UserRestController {
         userService.updateUserPatchName(updatePatchUserName, id);
     }
 
-    @PatchMapping("user/patch/{lastName}")
-    public void updateUserPatchLastName(@PathVariable Long id, @RequestBody UserDTO updatePatchUserLastName) {
-        userService.updateUserPatchLastName(updatePatchUserLastName, id);
+
+    @PatchMapping("/user/{id}")
+    public UserDTO patch(@PathVariable("id") Long id, @RequestBody Map<String, Object> updates){
+        return userService.patch(id, updates);
     }
 }
