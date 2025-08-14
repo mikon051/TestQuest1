@@ -1,8 +1,12 @@
 package org.example;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
@@ -73,4 +77,35 @@ public class UserService {
                 }).map(userRepository::save).map(UserDTO::of)
                 .orElseThrow(() -> new RuntimeException("Сущность не найдена"));
     }
+
+    public UserEntity getUserById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Employee not found"));
+    }
+
+    // Методы для работы с фотографиями
+    public UserEntity uploadPhoto(Long userId, MultipartFile file) throws IOException {
+        UserEntity user = getUserById(userId);
+        user.setPhoto(file.getBytes());
+        user.setPhotoFileName(file.getOriginalFilename());
+        user.setPhotoContentType(file.getContentType());
+        return userRepository.save(user);
+    }
+
+    public UserEntity updatePhoto(Long employeeId, MultipartFile file) throws IOException {
+        UserEntity user = getUserById(employeeId);
+        user.setPhoto(file.getBytes());
+        user.setPhotoFileName(file.getOriginalFilename());
+        user.setPhotoContentType(file.getContentType());
+        return userRepository.save(user);
+    }
+
+    public void deletePhoto(Long employeeId) {
+        UserEntity employee = getUserById(employeeId);
+        employee.setPhoto(null);
+        employee.setPhotoFileName(null);
+        employee.setPhotoContentType(null);
+        userRepository.save(employee);
+    }
+
 }
